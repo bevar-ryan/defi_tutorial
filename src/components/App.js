@@ -50,7 +50,8 @@ class App extends Component {
       const tokenFarm = new web3.eth.Contract(TokenFarm.abi, tokenFarmData.address)
       this.setState({ tokenFarm })
       let stakingBalance = await tokenFarm.methods.stakingBalance(this.state.account).call()
-      this.setState({ stakingBalance: stakingBalance.toString() })
+      let mintableBalance = await tokenFarm.methods.getMintableTokens().call({ from: this.state.account})
+      this.setState({ stakingBalance: stakingBalance.toString(),  mintableBalance})
     } else {
       window.alert('TokenFarm contract not deployed to detected network.')
     }
@@ -87,6 +88,13 @@ class App extends Component {
     })
   }
 
+  mintingTokens = () => {
+    this.setState({ loading: true })
+    this.state.tokenFarm.methods.minting().send({ from: this.state.account }).on('transactionHash', (hash) => {
+      this.setState({ loading: false })
+    })
+  }
+
   constructor(props) {
     super(props)
     this.state = {
@@ -97,6 +105,7 @@ class App extends Component {
       daiTokenBalance: '0',
       dappTokenBalance: '0',
       stakingBalance: '0',
+      mintableBalance: '0',
       loading: true
     }
   }
@@ -110,8 +119,10 @@ class App extends Component {
         daiTokenBalance={this.state.daiTokenBalance}
         dappTokenBalance={this.state.dappTokenBalance}
         stakingBalance={this.state.stakingBalance}
+        mintableBalance={this.state.mintableBalance}
         stakeTokens={this.stakeTokens}
         unstakeTokens={this.unstakeTokens}
+        mintingTokens={this.mintingTokens}
       />
     }
 

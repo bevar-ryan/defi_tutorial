@@ -4,6 +4,7 @@ import "./DappToken.sol";
 import "./DaiToken.sol";
 
 contract TokenFarm {
+    uint public RATIO = 10;
     string public name = "Dapp Token Farm";
     address public owner;
     DappToken public dappToken;
@@ -13,6 +14,7 @@ contract TokenFarm {
     mapping(address => uint) public stakingBalance;
     mapping(address => bool) public hasStaked;
     mapping(address => bool) public isStaking;
+    mapping(address => uint) public lastBlockNumber;
 
     constructor(DappToken _dappToken, DaiToken _daiToken) public {
         dappToken = _dappToken;
@@ -23,6 +25,11 @@ contract TokenFarm {
     function stakeTokens(uint _amount) public {
         // Require amount greater than 0
         require(_amount > 0, "amount cannot be 0");
+
+        if (stakingBalance[msg.sender] > 0 && block.number - lastBlockNumber[msg.sender] >= RATIO)
+            minting();
+        else
+            lastBlockNumber[msg.sender] = block.number;
 
         // Trasnfer Mock Dai tokens to this contract for staking
         daiToken.transferFrom(msg.sender, address(this), _amount);
@@ -71,5 +78,21 @@ contract TokenFarm {
                 dappToken.transfer(recipient, balance);
             }
         }
+    }
+
+    // Minting Tokens
+    function minting() public {
+        require(stakingBalance[msg.sender] > 0, "staking balance cannot be 0");
+        require(block.number - lastBlockNumber[msg.sender] >= RATIO, "Can be mined after block completion of 10 or more");
+
+        uint diffBlock = block.number - lastBlockNumber[msg.sender];
+        uint balance = stakingBalance[msg.sender] * diffBlock / RATIO;
+        dappToken.transfer(msg.sender, balance);
+
+        lastBlockNumber[msg.sender] = block.number;
+    }
+
+    function getMintableTokens() public view returns (uint) {
+        return stakingBalance[msg.sender] * (block.number - lastBlockNumber[msg.sender]) / RATIO;
     }
 }

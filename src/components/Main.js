@@ -11,12 +11,14 @@ class Main extends Component {
           <thead>
             <tr>
               <th scope="col">Staking Balance</th>
+              <th scope="col">Mintable Balance</th>
               <th scope="col">Reward Balance</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>{window.web3.utils.fromWei(this.props.stakingBalance, 'Ether')} mDAI</td>
+              <td>{window.web3.utils.fromWei(this.props.mintableBalance, 'Ether')} DAPP</td>
               <td>{window.web3.utils.fromWei(this.props.dappTokenBalance, 'Ether')} DAPP</td>
             </tr>
           </tbody>
@@ -25,7 +27,6 @@ class Main extends Component {
         <div className="card mb-4" >
 
           <div className="card-body">
-
             <form className="mb-3" onSubmit={(event) => {
                 event.preventDefault()
                 let amount
@@ -53,17 +54,26 @@ class Main extends Component {
                   </div>
                 </div>
               </div>
-              <button type="submit" className="btn btn-primary btn-block btn-lg">STAKE!</button>
+              <button type="submit" className="btn btn-primary btn-block btn-lg">STAKE</button>
             </form>
+            <button
+              type="submit"
+              className="btn btn-primary btn-block btn-lg"
+              onClick={(event) => {
+                event.preventDefault()
+                this.props.unstakeTokens()
+              }}>
+                UN-STAKE
+            </button>
             <button
               type="submit"
               className="btn btn-link btn-block btn-sm"
               onClick={(event) => {
                 event.preventDefault()
-                this.props.unstakeTokens()
+                this.props.mintingTokens()
               }}>
-                UN-STAKE...
-              </button>
+                CLAIM DAPP TOKEN
+            </button>
           </div>
         </div>
 
